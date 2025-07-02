@@ -21,6 +21,7 @@
     "@react-keycloak/web": "^3.4.0",
     "clsx": "^2.0.0",
     "keycloak-js": "^26.2.0",
+    "axios": "^1.6.7",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
