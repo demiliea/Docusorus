@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, PropsWithChildren } from 'react';
 import Keycloak from 'keycloak-js';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 
@@ -29,7 +29,7 @@ const initOptions = {
  * children to avoid accessing `window`/`document`, which are not available in
  * Node.js.
  */
-const Root: React.FC = ({ children }) => {
+const Root: React.FC<PropsWithChildren> = ({ children }) => {
   const isBrowser = typeof window !== 'undefined';
 
   // Avoid executing Keycloak code during server-side rendering

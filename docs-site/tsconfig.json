@@ -1,12 +1,18 @@
 {
   // This file is not used in compilation. It is here just for a nice editor experience.
-  "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
+    "target": "ES2020",
     "baseUrl": ".",
     "jsx": "react-jsx",
-    "moduleResolution": "node16",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "types": ["node", "react"],
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
   },
+  "include": ["src/**/*", "docusaurus.config.ts", "sidebars.ts"],
   "exclude": [".docusaurus", "build"]
 }
