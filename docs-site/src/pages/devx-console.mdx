@@ -4,6 +4,7 @@ slug: /devx-console
 ---
 
 import DevXConsole from '@site/src/components/DevXConsole';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Developer Experience Console
 
@@ -22,4 +23,6 @@ The token is refreshed silently while the page stays open, so the snippet remain
 
 > **Tip:** If you see an error message, the token has likely expired or could not be refreshed. Use the **Retry login** button to start a new session.
 
-<DevXConsole />
+<BrowserOnly fallback={<div>Loading console...</div>}>
+  {() => <DevXConsole />}
+</BrowserOnly>
