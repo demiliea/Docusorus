@@ -1,21 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import Keycloak, { type KeycloakInstance, type KeycloakInitOptions } from 'keycloak-js';
-import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
+import { useKeycloak } from '@react-keycloak/web';
 import styles from './DevXConsole.module.css';
-
-// Keycloak configuration constants
-const keycloakConfig = {
-  url: 'https://keycloak.eu-nordics-sto-test.dstny.d4sp.com/auth',
-  realm: '40aa6bdb-11e5-49b7-8af8-6afe2111e514',
-  clientId: 'sam',
-};
-
-const initOptions: KeycloakInitOptions = {
-  onLoad: 'login-required',
-  checkLoginIframe: false,
-  pkceMethod: 'S256',
-  redirectUri: typeof window !== 'undefined' ? window.location.href : undefined,
-};
 
 // Inner component that consumes Keycloak context
 const ConsoleInner: React.FC = () => {
@@ -89,24 +74,10 @@ const ConsoleInner: React.FC = () => {
  * DevXConsole component wraps children with Keycloak provider and renders the console.
  */
 const DevXConsole: React.FC = () => {
-  const keycloak = useMemo<KeycloakInstance>(() => new Keycloak(keycloakConfig), []);
-
-  return (
-    <ReactKeycloakProvider
-      authClient={keycloak}
-      initOptions={initOptions}
-      onEvent={(event, error) => {
-        // eslint-disable-next-line no-console
-        console.debug('[Keycloak event]', event, error);
-      }}
-      onTokens={(tokens) => {
-        // eslint-disable-next-line no-console
-        console.debug('[Keycloak tokens]', tokens);
-      }}
-    >
-      <ConsoleInner />
-    </ReactKeycloakProvider>
-  );
+  // The site-wide ReactKeycloakProvider (defined in src/theme/Root.tsx) already
+  // supplies the Keycloak context, so we can directly render the inner
+  // console component here.
+  return <ConsoleInner />;
 };
 
 export default DevXConsole;
