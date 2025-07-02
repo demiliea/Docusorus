@@ -1,0 +1,28 @@
+---
+title: DevX Console
+slug: /devx-console
+---
+
+import DevXConsole from '@site/src/components/DevXConsole';
+
+# Developer Experience Console
+
+Welcome to the DevX console. This interactive panel lets you:
+
+1. Authenticate against our Keycloak realm.
+2. Obtain your JSON Web Token (JWT).
+3. Copy a ready-made `curl` command with the token injected.
+
+## Authentication flow
+
+When you press **Login with Keycloak**, you'll be redirected to our identity provider. After entering your credentials and approving access for the *sam* client, you'll be returned here. The console will then:
+
+- Show your username and token expiry time.
+- Display the raw JWT (with a handy copy button).
+- Generate a sample `curl` request using the token in the `Authorization` header.
+
+The component automatically refreshes the token so the snippet remains valid. If the refresh fails you'll see an error message and can retry logging in.
+
+---
+
+<DevXConsole />
