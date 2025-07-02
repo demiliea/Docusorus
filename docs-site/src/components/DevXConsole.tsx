@@ -43,6 +43,9 @@ const ConsoleInner: React.FC = () => {
       <p className={styles.userInfo}>
         Logged in as <strong>{keycloak.tokenParsed?.preferred_username}</strong>
       </p>
+      <h4>JWT Token</h4>
+      <pre className={styles.token}><code>{keycloak.token}</code></pre>
+      <button onClick={() => navigator.clipboard.writeText(keycloak.token!)}>Copy token</button>
       <h4>Ready-to-use Code Snippet</h4>
       <pre className={styles.snippet}><code>{snippet}</code></pre>
       <button onClick={() => navigator.clipboard.writeText(snippet)}>Copy snippet</button>
