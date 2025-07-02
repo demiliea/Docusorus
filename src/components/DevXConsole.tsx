@@ -3,12 +3,7 @@ import Keycloak, {
   type KeycloakInstance,
   type KeycloakInitOptions,
 } from 'keycloak-js';
-import {
-  ReactKeycloakProvider,
-  useKeycloak,
-  type EventHandler,
-  type Tokens,
-} from '@react-keycloak/web';
+import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
 import styles from './DevXConsole.module.css';
 
 // -----------------------------------------------------------------------------
@@ -118,12 +113,12 @@ const DevXConsole: React.FC = () => {
   const keycloak = useMemo<KeycloakInstance>(() => new Keycloak(keycloakConfig), []);
 
   // Optional debug logging
-  const onEvent: EventHandler = (event, error) => {
+  const onEvent = (event: unknown, error: unknown) => {
     // eslint-disable-next-line no-console
     console.debug('[Keycloak event]', event, error);
   };
 
-  const onTokens = (tokens: Tokens) => {
+  const onTokens = (tokens: unknown) => {
     // eslint-disable-next-line no-console
     console.debug('[Keycloak tokens]', tokens);
   };
