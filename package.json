@@ -1,0 +1,32 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demiliea/Docusorus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/demiliea/Docusorus/issues"
+  },
+  "homepage": "https://github.com/demiliea/Docusorus#readme",
+  "dependencies": {
+    "@react-keycloak/web": "^3.4.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "keycloak-js": "^26.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10"
+  }
+}
