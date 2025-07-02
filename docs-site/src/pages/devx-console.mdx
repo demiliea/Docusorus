@@ -9,4 +9,17 @@ import DevXConsole from '@site/src/components/DevXConsole';
 
 Use the console below to authenticate with Keycloak and instantly get a JWT-powered code snippet you can use in your API calls.
 
+## How it works
+
+1. Click **Login with Keycloak** – you will be redirected to our identity provider.
+2. Enter your credentials and approve access for the *sam* client.
+3. Once redirected back, the console:
+   - Retrieves your OpenID Connect access token (JWT)
+   - Shows its expiry time and lets you copy it with one click
+   - Generates a ready-made `curl` command injecting the token in the `Authorization` header.
+
+The token is refreshed silently while the page stays open, so the snippet remains valid.
+
+> **Tip:** If you see an error message, the token has likely expired or could not be refreshed. Use the **Retry login** button to start a new session.
+
 <DevXConsole />
