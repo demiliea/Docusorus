@@ -1,0 +1,23 @@
+.container {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+.token {
+  background: var(--ifm-color-emphasis-200);
+  padding: 0.5rem;
+  overflow-x: auto;
+}
+
+.code {
+  background: var(--ifm-code-background);
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+.result {
+  background: var(--ifm-color-emphasis-200);
+  padding: 0.75rem;
+  overflow-x: auto;
+}
