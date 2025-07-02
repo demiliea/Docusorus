@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import Keycloak from 'keycloak-js';
+import Keycloak, { type KeycloakInstance, type KeycloakInitOptions } from 'keycloak-js';
 import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
 import styles from './DevXConsole.module.css';
 
@@ -10,7 +10,7 @@ const keycloakConfig = {
   clientId: 'sam',
 };
 
-const initOptions: Keycloak.KeycloakInitOptions = {
+const initOptions: KeycloakInitOptions = {
   onLoad: 'login-required',
   checkLoginIframe: false,
   pkceMethod: 'S256',
@@ -58,7 +58,7 @@ const ConsoleInner: React.FC = () => {
  * DevXConsole component wraps children with Keycloak provider and renders the console.
  */
 const DevXConsole: React.FC = () => {
-  const keycloak = useMemo(() => new Keycloak(keycloakConfig), []);
+  const keycloak = useMemo<KeycloakInstance>(() => new Keycloak(keycloakConfig), []);
 
   return (
     <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
