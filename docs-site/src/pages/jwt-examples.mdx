@@ -4,9 +4,12 @@ slug: /jwt-examples
 ---
 
 import JwtExamples from '@site/src/components/JwtExamples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # JWT Token Usage Examples
 
 This page demonstrates a few practical ways to pass your Keycloak-issued **JWT access token** to backend APIs.
 
-<JwtExamples />
+<BrowserOnly fallback={<div>Loading examples...</div>}>
+  {() => <JwtExamples />}
+</BrowserOnly>
