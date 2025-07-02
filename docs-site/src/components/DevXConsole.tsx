@@ -21,11 +21,18 @@ const ConsoleInner: React.FC = () => {
   }, [initialized, keycloak]);
 
   const snippet = useMemo(() => {
-    if (!initialized || !keycloak.authenticated || !keycloak.token) return '';
+    if (!initialized) return '';
+    if (!keycloak.authenticated) {
+      return `curl -H "Authorization: Bearer [YOUR_JWT_TOKEN_HERE]" https://api.example.com/hello`;
+    }
     return `curl -H "Authorization: Bearer ${keycloak.token}" https://api.example.com/hello`;
   }, [initialized, keycloak]);
 
   if (!initialized) return <p>Loading authentication...</p>;
+
+  const isAuthenticated = keycloak.authenticated;
+  const username = isAuthenticated ? keycloak.tokenParsed?.preferred_username : 'your-username';
+  const currentToken = isAuthenticated ? keycloak.token : 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJxWG...[PLACEHOLDER_JWT_TOKEN]';
 
   if (error) {
     return (
@@ -36,42 +43,120 @@ const ConsoleInner: React.FC = () => {
     );
   }
 
-  if (!keycloak.authenticated) {
-    return (
-      <div className={styles.consoleContainer}>
-        <p>You are not authenticated.</p>
-        <button onClick={() => keycloak.login()}>Login with Keycloak</button>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.consoleContainer}>
-      <h3>Your DevX Console</h3>
+      <h3>Developer Console</h3>
+      
+      {!isAuthenticated && (
+        <div className="admonition admonition-info" style={{ marginBottom: '1rem' }}>
+          <div className="admonition-heading">
+            <h5>Demo Mode</h5>
+          </div>
+          <div className="admonition-content">
+            <p>
+              You're viewing placeholder content. <button 
+                className="button button--primary button--sm"
+                onClick={() => keycloak.login()}
+                style={{ marginLeft: '8px' }}>
+                Sign in
+              </button> to see your actual JWT token and personalized developer tools.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isAuthenticated && (
+        <div className="admonition admonition-success" style={{ marginBottom: '1rem' }}>
+          <div className="admonition-heading">
+            <h5>Authenticated</h5>
+          </div>
+          <div className="admonition-content">
+            <p>
+              Signed in as <strong>{username}</strong>. Tools below use your real JWT token.
+            </p>
+          </div>
+        </div>
+      )}
+
       <p className={styles.userInfo}>
-        Logged in as <strong>{keycloak.tokenParsed?.preferred_username}</strong>
+        User: <strong>{username}</strong>
+        {!isAuthenticated && <span style={{ color: '#666', marginLeft: '8px' }}>(Demo)</span>}
       </p>
-      {keycloak.tokenParsed?.exp && (
+      
+      {isAuthenticated && keycloak.tokenParsed?.exp && (
         <p>
           Token expires at:{' '}
           <strong>
-            {new Date((keycloak.tokenParsed.exp as number) * 1000).toLocaleTimeString()}
+            {new Date((keycloak.tokenParsed.exp as number) * 1000).toLocaleString()}
           </strong>
         </p>
       )}
+
+      {!isAuthenticated && (
+        <p style={{ color: '#666' }}>
+          Token expires at: <strong>[Sign in to see expiration]</strong>
+        </p>
+      )}
+
       <h4>JWT Token</h4>
-      <pre className={styles.token}><code>{keycloak.token}</code></pre>
-      <button onClick={() => navigator.clipboard.writeText(keycloak.token!)}>Copy token</button>
+      <pre className={styles.token}><code>{currentToken}</code></pre>
+      <button 
+        onClick={() => navigator.clipboard.writeText(isAuthenticated ? keycloak.token! : '[PLACEHOLDER_TOKEN]')}
+        title={isAuthenticated ? 'Copy your JWT token' : 'Copy placeholder token'}>
+        {isAuthenticated ? 'Copy token' : 'Copy placeholder'}
+      </button>
+      
       <h4>Ready-to-use Code Snippet</h4>
       <pre className={styles.snippet}><code>{snippet}</code></pre>
-      <button onClick={() => navigator.clipboard.writeText(snippet)}>Copy snippet</button>
-      <button onClick={() => keycloak.logout({ redirectUri: window.location.href })}>Logout</button>
+      <button 
+        onClick={() => navigator.clipboard.writeText(snippet)}
+        title={isAuthenticated ? 'Copy curl command with your token' : 'Copy curl command template'}>
+        {isAuthenticated ? 'Copy snippet' : 'Copy template'}
+      </button>
+
+      <div style={{ marginTop: '2rem' }}>
+        {isAuthenticated ? (
+          <button 
+            className="button button--danger"
+            onClick={() => keycloak.logout({ redirectUri: window.location.href })}>
+            Sign Out
+          </button>
+        ) : (
+          <button 
+            className="button button--primary"
+            onClick={() => keycloak.login()}>
+            Sign In for Real Tokens
+          </button>
+        )}
+      </div>
+
+      {isAuthenticated && (
+        <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+          <h4>Additional Developer Tools</h4>
+          <p>
+            <strong>Token Type:</strong> {keycloak.tokenParsed?.typ || 'JWT'}
+          </p>
+          <p>
+            <strong>Issuer:</strong> {keycloak.tokenParsed?.iss || 'Unknown'}
+          </p>
+          <p>
+            <strong>Subject:</strong> {keycloak.tokenParsed?.sub || 'Unknown'}
+          </p>
+          <details>
+            <summary>Full Token Payload</summary>
+            <pre style={{ fontSize: '0.8rem', maxHeight: '200px', overflow: 'auto' }}>
+              {JSON.stringify(keycloak.tokenParsed, null, 2)}
+            </pre>
+          </details>
+        </div>
+      )}
     </div>
   );
 };
 
 /**
- * DevXConsole component wraps children with Keycloak provider and renders the console.
+ * DevXConsole component provides developer tools for JWT token management.
+ * Shows placeholder content when not authenticated and real tools when authenticated.
  */
 const DevXConsole: React.FC = () => {
   // The site-wide ReactKeycloakProvider (defined in src/theme/Root.tsx) already

@@ -8,20 +8,35 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Developer Experience Console
 
-Use the console below to authenticate with Keycloak and instantly get a JWT-powered code snippet you can use in your API calls.
+The Developer Console provides JWT token management tools and code snippets for API integration. It's accessible without authentication but becomes fully functional when you sign in.
 
 ## How it works
 
-1. Click **Login with Keycloak** – you will be redirected to our identity provider.
-2. Enter your credentials and approve access for the *sam* client.
-3. Once redirected back, the console:
-   - Retrieves your OpenID Connect access token (JWT)
-   - Shows its expiry time and lets you copy it with one click
-   - Generates a ready-made `curl` command injecting the token in the `Authorization` header.
+### Without Sign In (Demo Mode)
+- View placeholder JWT tokens and code examples
+- Copy template curl commands for testing
+- See the structure of JWT-based API authentication
+- All functionality is available for learning and reference
 
-The token is refreshed silently while the page stays open, so the snippet remains valid.
+### With Sign In (Full Functionality)
+1. Click **Sign In** to authenticate with Keycloak
+2. Enter your credentials and approve access
+3. Once authenticated, the console provides:
+   - Your actual JWT access token with copy functionality
+   - Real-time token expiration monitoring
+   - Personalized curl commands with your token
+   - Token payload inspection and debugging tools
+   - Automatic token refresh while the page is open
 
-> **Tip:** If you see an error message, the token has likely expired or could not be refreshed. Use the **Retry login** button to start a new session.
+## Features
+
+- **Token Display**: View your JWT token (or placeholder in demo mode)
+- **Code Generation**: Ready-to-use curl commands
+- **Token Management**: Copy tokens and monitor expiration
+- **Developer Tools**: Inspect token payload and metadata
+- **Seamless Experience**: All content accessible without authentication
+
+> **Tip:** Sign in to unlock personalized JWT tokens and live API testing capabilities. If you encounter errors, use the retry login button to refresh your session.
 
 <BrowserOnly fallback={<div>Loading console...</div>}>
   {() => <DevXConsole />}
