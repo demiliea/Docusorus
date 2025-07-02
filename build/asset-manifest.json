@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/demiliea/Docusorus/static/css/main.4d9b11f2.css",
+    "main.js": "/demiliea/Docusorus/static/js/main.19866d95.js",
+    "static/js/204.2e3d563c.chunk.js": "/demiliea/Docusorus/static/js/204.2e3d563c.chunk.js",
+    "index.html": "/demiliea/Docusorus/index.html",
+    "main.4d9b11f2.css.map": "/demiliea/Docusorus/static/css/main.4d9b11f2.css.map",
+    "main.19866d95.js.map": "/demiliea/Docusorus/static/js/main.19866d95.js.map",
+    "204.2e3d563c.chunk.js.map": "/demiliea/Docusorus/static/js/204.2e3d563c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4d9b11f2.css",
+    "static/js/main.19866d95.js"
+  ]
+}

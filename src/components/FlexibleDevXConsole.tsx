@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
+import TokenDecoder from './TokenDecoder';
 import styles from './DevXConsole.module.css';
 
 // -----------------------------------------------------------------------------
@@ -157,6 +158,8 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
       </pre>
       <button onClick={() => navigator.clipboard.writeText(snippet)}>Copy snippet</button>
 
+      {keycloak.token && <TokenDecoder token={keycloak.token} />}
+
       <button onClick={() => keycloak.logout({ redirectUri: window.location.href })}>Logout</button>
     </div>
   );
@@ -210,6 +213,8 @@ const PlaceholderConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBackT
         <code>{snippet}</code>
       </pre>
       <button onClick={() => navigator.clipboard.writeText(snippet)}>Copy snippet</button>
+
+      <TokenDecoder token={placeholderToken} />
 
       <div style={{ background: '#f6ffed', padding: '1rem', borderRadius: '8px', marginTop: '2rem' }}>
         <h4 style={{ margin: '0 0 0.5rem 0', color: '#52c41a' }}>💡 Want real tokens?</h4>
