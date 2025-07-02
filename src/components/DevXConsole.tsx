@@ -1,8 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import Keycloak, {
-  type KeycloakInstance,
-  type KeycloakInitOptions,
-} from 'keycloak-js';
 import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
 import styles from './DevXConsole.module.css';
 
@@ -16,10 +12,10 @@ const keycloakConfig = {
   clientId: 'sam',
 };
 
-const initOptions: KeycloakInitOptions = {
-  onLoad: 'login-required',
+const initOptions = {
+  onLoad: 'login-required' as const,
   checkLoginIframe: false,
-  pkceMethod: 'S256',
+  pkceMethod: 'S256' as const,
   redirectUri: typeof window !== 'undefined' ? window.location.href : undefined,
 };
 
@@ -110,7 +106,21 @@ const ConsoleInner: React.FC = () => {
 // -----------------------------------------------------------------------------
 
 const DevXConsole: React.FC = () => {
-  const keycloak = useMemo<KeycloakInstance>(() => new Keycloak(keycloakConfig), []);
+  const [keycloakInstance, setKeycloakInstance] = useState<any>(null);
+
+  useEffect(() => {
+    const initKeycloak = async () => {
+      try {
+        const { default: Keycloak } = await import('keycloak-js');
+        const keycloak = new Keycloak(keycloakConfig);
+        setKeycloakInstance(keycloak);
+      } catch (error) {
+        console.debug('Failed to load Keycloak:', error);
+      }
+    };
+
+    initKeycloak();
+  }, []);
 
   // Optional debug logging
   const onEvent = (event: unknown, error: unknown) => {
@@ -123,8 +133,12 @@ const DevXConsole: React.FC = () => {
     console.debug('[Keycloak tokens]', tokens);
   };
 
+  if (!keycloakInstance) {
+    return <div>Loading authentication...</div>;
+  }
+
   return (
-    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent} onTokens={onTokens}>
+    <ReactKeycloakProvider authClient={keycloakInstance} initOptions={initOptions} onEvent={onEvent} onTokens={onTokens}>
       <ConsoleInner />
     </ReactKeycloakProvider>
   );
