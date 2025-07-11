@@ -11,6 +11,7 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('guest');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | undefined>();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Check if user is already authenticated on app load
   useEffect(() => {
@@ -23,11 +24,22 @@ const App: React.FC = () => {
           clientId: 'sam',
         });
 
-        const authenticated = await keycloak.init({
+        // Add timeout to prevent hanging
+        const initPromise = keycloak.init({
           onLoad: 'check-sso',
           checkLoginIframe: false,
           pkceMethod: 'S256',
         });
+
+        // Create a timeout promise that rejects after 10 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Authentication initialization timeout'));
+          }, 10000); // 10 second timeout
+        });
+
+        // Race between init and timeout
+        const authenticated = await Promise.race([initPromise, timeoutPromise]);
 
         if (authenticated && keycloak.tokenParsed) {
           setIsAuthenticated(true);
@@ -36,7 +48,9 @@ const App: React.FC = () => {
         }
       } catch (error) {
         console.debug('Auth check failed:', error);
-        // Continue as guest - this is expected if Keycloak is not available
+        // Continue as guest - this is expected if Keycloak is not available or times out
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
 
@@ -56,6 +70,29 @@ const App: React.FC = () => {
   const handleBackToLanding = () => {
     setCurrentPage('landing');
   };
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="App" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ 
+              border: '4px solid #f3f3f3', 
+              borderTop: '4px solid #3498db', 
+              borderRadius: '50%', 
+              width: '40px', 
+              height: '40px', 
+              animation: 'spin 2s linear infinite',
+              margin: '0 auto 20px'
+            }}></div>
+            <p>Checking authentication...</p>
+            <p style={{ fontSize: '14px', color: '#666' }}>This will timeout in 10 seconds</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (currentPage === 'landing') {
     return (

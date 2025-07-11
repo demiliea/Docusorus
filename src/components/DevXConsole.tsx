@@ -105,15 +105,31 @@ const ConsoleInner: React.FC = () => {
 
 const DevXConsole: React.FC = () => {
   const [keycloakInstance, setKeycloakInstance] = useState<any>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [initializationError, setInitializationError] = useState<string | null>(null);
 
   useEffect(() => {
     const initKeycloak = async () => {
+      setIsInitializing(true);
+      setInitializationError(null);
+      
       try {
         const { default: Keycloak } = await import('keycloak-js');
         const keycloak = new Keycloak(keycloakConfig);
+        
+        // Add timeout to prevent hanging
+        const initTimeout = setTimeout(() => {
+          setInitializationError('Keycloak initialization timed out. Please try again.');
+          setIsInitializing(false);
+        }, 10000); // 10 second timeout
+        
         setKeycloakInstance(keycloak);
+        clearTimeout(initTimeout);
       } catch (error) {
         console.debug('Failed to load Keycloak:', error);
+        setInitializationError('Failed to initialize authentication.');
+      } finally {
+        setIsInitializing(false);
       }
     };
 
@@ -131,8 +147,45 @@ const DevXConsole: React.FC = () => {
     console.debug('[Keycloak tokens]', tokens);
   };
 
+  if (isInitializing) {
+    return (
+      <div className={styles.consoleContainer}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ 
+            border: '4px solid #f3f3f3', 
+            borderTop: '4px solid #3498db', 
+            borderRadius: '50%', 
+            width: '40px', 
+            height: '40px', 
+            animation: 'spin 2s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <p>Initializing authentication...</p>
+          <p style={{ fontSize: '14px', color: '#666' }}>This will timeout in 10 seconds</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (initializationError) {
+    return (
+      <div className={styles.consoleContainer}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--ifm-color-danger)', marginBottom: '1rem' }}>{initializationError}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
   if (!keycloakInstance) {
-    return <div>Loading authentication...</div>;
+    return (
+      <div className={styles.consoleContainer}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Loading authentication...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
