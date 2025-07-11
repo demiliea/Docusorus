@@ -7,18 +7,15 @@ const ConsoleInner: React.FC = () => {
   const { keycloak, initialized } = useKeycloak();
   const [error, setError] = useState<string | null>(null);
 
-  // Refresh token proactively 60 s before expiry
-  useEffect(() => {
-    if (!initialized || !keycloak.authenticated) return;
-
-    const refreshInterval = setInterval(() => {
-      keycloak
-        .updateToken(60) // seconds
-        .catch(() => setError('Failed to refresh token'));
-    }, 30_000); // tick every 30s
-
-    return () => clearInterval(refreshInterval);
-  }, [initialized, keycloak]);
+  // Manual token refresh function
+  const handleRefreshToken = async () => {
+    try {
+      await keycloak.updateToken(0); // Force refresh
+      setError(null);
+    } catch (error) {
+      setError('Token refresh failed. Please log in again.');
+    }
+  };
 
   const snippet = useMemo(() => {
     if (!initialized || !keycloak.authenticated || !keycloak.token) return '';
@@ -62,6 +59,7 @@ const ConsoleInner: React.FC = () => {
       <h4>JWT Token</h4>
       <pre className={styles.token}><code>{keycloak.token}</code></pre>
       <button onClick={() => navigator.clipboard.writeText(keycloak.token!)}>Copy token</button>
+      <button onClick={handleRefreshToken} style={{ marginLeft: '0.5rem' }}>Refresh Token</button>
       <h4>Ready-to-use Code Snippet</h4>
       <pre className={styles.snippet}><code>{snippet}</code></pre>
       <button onClick={() => navigator.clipboard.writeText(snippet)}>Copy snippet</button>
