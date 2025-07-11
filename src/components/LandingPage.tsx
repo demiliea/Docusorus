@@ -1,11 +1,14 @@
 import React from 'react';
 import styles from './LandingPage.module.css';
+import { TokenData } from '../utils/tokenManager';
 
 interface LandingPageProps {
   onSignIn: () => void;
   onContinueWithoutSignIn: () => void;
   isAuthenticated: boolean;
   username?: string;
+  authEnabled?: boolean;
+  tokenData?: TokenData | null;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({

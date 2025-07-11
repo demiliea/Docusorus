@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
 import TokenDecoder from './TokenDecoder';
+import { TokenData, TokenManager } from '../utils/tokenManager';
 import styles from './DevXConsole.module.css';
 
 // -----------------------------------------------------------------------------
@@ -71,13 +72,21 @@ const parsePlaceholderToken = (token: string) => {
 interface ConsoleProps {
   mode: 'authenticated' | 'placeholder' | 'guest';
   onBackToLanding: () => void;
+  onLogout?: () => void;
+  tokenData?: TokenData | null;
+  tokenManager?: TokenManager;
+  authEnabled?: boolean;
 }
 
 // -----------------------------------------------------------------------------
 // Inner console component (for authenticated mode)
 // -----------------------------------------------------------------------------
 
-const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBackToLanding }) => {
+const AuthenticatedConsole: React.FC<{ 
+  onBackToLanding: () => void; 
+  onLogout?: () => void;
+  tokenData?: TokenData | null;
+}> = ({ onBackToLanding, onLogout, tokenData }) => {
   const { keycloak, initialized } = useKeycloak();
   const [error, setError] = useState<string | null>(null);
 
@@ -101,9 +110,11 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
   }, [keycloak.tokenParsed]);
 
   const snippet = useMemo(() => {
-    if (!initialized || !keycloak.authenticated || !keycloak.token) return '';
-    return `curl -H "Authorization: Bearer ${keycloak.token}" https://api.example.com/hello`;
-  }, [initialized, keycloak]);
+    // Use stored token data if available, otherwise fall back to keycloak
+    const token = tokenData?.accessToken || keycloak.token;
+    if (!token) return '';
+    return `curl -H "Authorization: Bearer ${token}" https://api.example.com/hello`;
+  }, [initialized, keycloak, tokenData]);
 
   if (!initialized) return <p>Loading authentication …</p>;
 
@@ -117,7 +128,13 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
     );
   }
 
-  if (!keycloak.authenticated) {
+  // Use stored token data if available, otherwise fall back to keycloak
+  const currentToken = tokenData?.accessToken || keycloak.token;
+  const currentUsername = tokenData?.username || keycloak.tokenParsed?.preferred_username;
+  const currentTokenParsed = tokenData?.tokenParsed || keycloak.tokenParsed;
+  const currentExpiresAt = tokenData?.expiresAt || (keycloak.tokenParsed?.exp ? keycloak.tokenParsed.exp * 1000 : null);
+
+  if (!keycloak.authenticated && !tokenData) {
     return (
       <div className={styles.consoleContainer}>
         <p>Authentication check completed, but you are not authenticated.</p>
@@ -137,18 +154,18 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
       <div style={{ background: '#e6f7ff', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
         <strong>🔐 Authenticated Mode</strong>
         <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
-          You're using real authentication tokens from Keycloak
+          You're using real authentication tokens {tokenData ? 'from storage' : 'from Keycloak'}
         </p>
       </div>
 
       <p className={styles.userInfo}>
-        Logged in as <strong>{keycloak.tokenParsed?.preferred_username}</strong>
+        Logged in as <strong>{currentUsername}</strong>
       </p>
 
-      {keycloak.tokenParsed?.exp && (
+      {currentExpiresAt && (
         <p>
           Token expires at{' '}
-          <strong>{new Date((keycloak.tokenParsed.exp as number) * 1000).toLocaleTimeString()}</strong>
+          <strong>{new Date(currentExpiresAt).toLocaleTimeString()}</strong>
         </p>
       )}
 
@@ -163,9 +180,9 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
 
       <h4>JWT Token</h4>
       <pre className={styles.token}>
-        <code>{keycloak.token}</code>
+        <code>{currentToken}</code>
       </pre>
-      <button onClick={() => navigator.clipboard.writeText(keycloak.token ?? '')}>Copy token</button>
+      <button onClick={() => navigator.clipboard.writeText(currentToken ?? '')}>Copy token</button>
       <button onClick={handleRefreshToken} style={{ marginLeft: '0.5rem' }}>Refresh Token</button>
 
       <h4>Ready-to-use Code Snippet</h4>
@@ -174,9 +191,15 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
       </pre>
       <button onClick={() => navigator.clipboard.writeText(snippet)}>Copy snippet</button>
 
-      {keycloak.token && <TokenDecoder token={keycloak.token} />}
+      {currentToken && <TokenDecoder token={currentToken} />}
 
-      <button onClick={() => keycloak.logout({ redirectUri: window.location.href })}>Logout</button>
+      <button onClick={() => {
+        if (onLogout) {
+          onLogout();
+        } else {
+          keycloak.logout({ redirectUri: window.location.href });
+        }
+      }}>Logout</button>
     </div>
   );
 };
@@ -185,7 +208,10 @@ const AuthenticatedConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBac
 // Placeholder/Guest console component
 // -----------------------------------------------------------------------------
 
-const PlaceholderConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBackToLanding }) => {
+const PlaceholderConsole: React.FC<{ 
+  onBackToLanding: () => void; 
+  onLogout?: () => void;
+}> = ({ onBackToLanding, onLogout }) => {
   const [placeholderToken] = useState(() => generatePlaceholderToken());
   const tokenData = useMemo(() => parsePlaceholderToken(placeholderToken), [placeholderToken]);
   
@@ -246,7 +272,14 @@ const PlaceholderConsole: React.FC<{ onBackToLanding: () => void }> = ({ onBackT
 // Main flexible console component
 // -----------------------------------------------------------------------------
 
-const FlexibleDevXConsole: React.FC<ConsoleProps> = ({ mode, onBackToLanding }) => {
+const FlexibleDevXConsole: React.FC<ConsoleProps> = ({ 
+  mode, 
+  onBackToLanding, 
+  onLogout, 
+  tokenData, 
+  tokenManager, 
+  authEnabled = true 
+}) => {
   const [keycloakInstance, setKeycloakInstance] = useState<any | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(null);
@@ -291,7 +324,7 @@ const FlexibleDevXConsole: React.FC<ConsoleProps> = ({ mode, onBackToLanding }) 
   };
 
   if (mode === 'placeholder' || mode === 'guest') {
-    return <PlaceholderConsole onBackToLanding={onBackToLanding} />;
+    return <PlaceholderConsole onBackToLanding={onBackToLanding} onLogout={onLogout} />;
   }
 
   if (isInitializing) {
@@ -343,7 +376,11 @@ const FlexibleDevXConsole: React.FC<ConsoleProps> = ({ mode, onBackToLanding }) 
       onEvent={onEvent} 
       onTokens={onTokens}
     >
-      <AuthenticatedConsole onBackToLanding={onBackToLanding} />
+      <AuthenticatedConsole 
+        onBackToLanding={onBackToLanding} 
+        onLogout={onLogout}
+        tokenData={tokenData}
+      />
     </ReactKeycloakProvider>
   );
 };
